@@ -11,7 +11,7 @@ public:
     void biasingBoids();
 
 
-    std::vector<Boid> getFlock() const;
+    std::vector<Boid> &getFlock();
 
 private:
     int N; //Numero di boids

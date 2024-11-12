@@ -3,22 +3,29 @@
 #include "Boid.h"
 #include "Flock.h"
 
-#define WIDHT 1290
-#define HEIGH 720
+#define WIDTH 2560
+#define HEIGH 1440
 
-#define vgaWIDTH 800
-#define vgaHEIGH 500
+#define vgaWIDTH 1280
+#define vgaHEIGH 720
 
 int main() {
-    int N = 40;
-    sf::RenderWindow window(sf::VideoMode(WIDHT,HEIGH), "SFML, esempio cerchio");
+    int N = 300;
+    sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
+
+    window.setView(window.getDefaultView());
 
     sf::RectangleShape vgaBounds(sf::Vector2f(vgaWIDTH, vgaHEIGH));  // 800x500 è la dimensione dell'area VGA
     vgaBounds.setFillColor(sf::Color::Transparent);
     vgaBounds.setOutlineColor(sf::Color::White);
     vgaBounds.setOutlineThickness(2.f);
-    vgaBounds.setPosition(WIDHT/2 - vgaWIDTH/2, HEIGH/2 - vgaHEIGH/2); // Centrato nella finestra
+    float vx = (WIDTH - vgaWIDTH)/2;
+    float vy = (HEIGH - vgaHEIGH)/2;
 
+    std::cout << vx << vy << std::endl;
+
+    //vgaBounds.setPosition((WIDTH - vgaWIDTH)/2, (HEIGH - vgaHEIGH)/2 ); // Centrato nella finestra
+    vgaBounds.setPosition(240, 100);
     sf::FloatRect bounds = vgaBounds.getGlobalBounds();
 
     Flock f = Flock(N);
@@ -35,7 +42,9 @@ int main() {
 
         for (auto &Boid : flock) {
             Boid.align(flock);
-            Boid.edges(vgaWIDTH,vgaHEIGH);
+            Boid.cohesion(flock);
+            Boid.separation(flock);
+            Boid.edges(vgaBounds.getPosition().x + vgaBounds.getSize().x,vgaBounds.getPosition().y+vgaBounds.getSize().y);
             Boid.update();
         }
         for (auto &Boid : flock) {

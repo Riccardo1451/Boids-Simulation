@@ -6,7 +6,7 @@ Boid::Boid(float const posX, float const posY) {
 
     static std::random_device rd;  // Seme per il generatore
     static std::mt19937 gen(rd()); // Generatore Mersenne Twister
-    std::uniform_real_distribution<> distribuzione(-0.05, 0.05);
+    std::uniform_real_distribution<> distribuzione(-0.5, 0.5);
 
     x = posX;
     y = posY;
@@ -75,6 +75,16 @@ void Boid::show(sf::RenderWindow &window) {
 void Boid::update() {
     x += Vx;
     y += Vy;
+
+    float speed = sqrt(Vx*Vx+Vy*Vy);
+
+    if (speed < minspeed) {
+        Vx = (Vx/speed)*minspeed;
+        Vy = (Vy/speed)*minspeed;
+    }else if (speed > maxspeed) {
+        Vx = (Vx/speed)*maxspeed;
+        Vy = (Vy/speed)*maxspeed;
+    }
 }
 
 void Boid::align(std::vector<Boid> flock) {
@@ -82,10 +92,10 @@ void Boid::align(std::vector<Boid> flock) {
     float yvel_avg = 0;
     int neighboring_boids = 0;
 
-    for (auto &otherboid:flock) {
+    for (auto otherboid:flock) {
         float dx = x-otherboid.get_x();
         float dy = y-otherboid.get_y();
-        if(&otherboid != this && abs(dx)<visualrange && abs(dy)<visualrange) {
+        if(&otherboid != this && abs(dx)<visualrange && abs(dy)<visualrange){
             float squareddistance = dx*dx + dy*dy;
             if(squareddistance < visualrange*visualrange) {
                 xvel_avg += otherboid.get_vx();
@@ -104,15 +114,60 @@ void Boid::align(std::vector<Boid> flock) {
 
 }
 
+void Boid::cohesion(std::vector<Boid> flock) {
+    float xpos_avg = 0;
+    float ypos_avg = 0;
+    int neighboring_boids = 0;
+
+    for(auto otherboid:flock) {
+        float dx = x-otherboid.get_x();
+        float dy = y-otherboid.get_y();
+        if (&otherboid != this && abs(dx)< visualrange && abs(dy)< visualrange) {
+            float squareddistance = dx*dx +dy*dy;
+            if (squareddistance < visualrange*visualrange) {
+                xpos_avg += otherboid.get_x();
+                ypos_avg += otherboid.get_y();
+                neighboring_boids += 1;
+            }
+        }
+    }
+    if(neighboring_boids > 0) {
+        xpos_avg = xpos_avg/neighboring_boids;
+        ypos_avg = ypos_avg/neighboring_boids;
+
+        Vx += (xpos_avg - x) * centeringfactor;
+        Vy += (ypos_avg - y) *centeringfactor;
+    }
+}
+
+void Boid::separation(std::vector<Boid> flock) {
+    float close_dx = 0;
+    float close_dy = 0;
+
+    for (auto otherboid:flock) {
+        float dx = x-otherboid.get_x();
+        float dy = y-otherboid.get_y();
+        if (&otherboid != this && abs(dx)< visualrange && abs(dy)< visualrange) {
+            float squareddistance = dx*dx + dy*dy;
+            if (squareddistance < protectedrange * protectedrange) {
+                close_dx += x - otherboid.get_x();
+                close_dy += y - otherboid.get_y();
+            }
+        }
+    }
+    Vx += close_dx*avoidfactor;
+    Vy += close_dy*avoidfactor;
+}
+
 void Boid::edges(float width, float heigh) {
-    if (x > width+245) {
+    if (x > width) {
         Vx -= turnfactor;
-    }else if (x < 245) {
+    }else if (x < 0) {
         Vx += turnfactor;
     }
-    if (y > heigh+110) {
+    if (y > heigh) {
         Vy -= turnfactor;
-    }else if (y < 110) {
+    }else if (y < 0) {
         Vy += turnfactor;
     }
 }

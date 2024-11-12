@@ -33,6 +33,10 @@ public:
 
     void align(std::vector<Boid> flock);
 
+    void cohesion(std::vector<Boid> flock);
+
+    void separation(std::vector<Boid> flock);
+
     void edges(float width, float heigh);
 
 
@@ -41,10 +45,15 @@ private:
     float Vx,Vy; //variabili di velocità
     bool scout; //True se appartiene al gruppo 1 False se appartiene al gruppo 2
     float angle;
-    float visualrange = 17;
+    float visualrange = 30;
     float protectedrange = 20;
-    float matchingFactor = 0.0005;
-    float turnfactor = 0.00001;
+    float matchingFactor = 0.02;
+    float centeringfactor = 0.001;
+    float avoidfactor = 0.0005;
+    float turnfactor = 0.2;
+    float minspeed = 0.5;
+    float maxspeed = 1.0;
+
 
 };
 
