@@ -12,7 +12,9 @@ find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 # Crea l'eseguibile chiamato Boids_Code
 add_executable(Boids_Code main.cpp
         Boid.cpp
-        Boid.h)
+        Boid.h
+        Flock.cpp
+        Flock.h)
 
 # Collega SFML al target Boids_Code
 target_link_libraries(Boids_Code sfml-graphics sfml-window sfml-system)
