@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Specifica la directory di SFML
 set(SFML_DIR "/opt/homebrew/Cellar/sfml/2.6.1/lib/cmake/SFML")
+#Specifica la directory di OpenMP
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -lomp")
+
+include_directories(/opt/homebrew/Cellar/libomp/19.1.2/include)
+link_directories(/opt/homebrew/Cellar/libomp/19.1.2/lib)
 
 # Trova e collega SFML
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)

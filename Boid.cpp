@@ -6,7 +6,7 @@ Boid::Boid(float const posX, float const posY) {
 
     static std::random_device rd;  // Seme per il generatore
     static std::mt19937 gen(rd()); // Generatore Mersenne Twister
-    std::uniform_real_distribution<> distribuzione(-0.5, 0.5);
+    std::uniform_real_distribution<> distribuzione(-0.1, 0.1);
 
     x = posX;
     y = posY;
@@ -60,16 +60,21 @@ bool Boid::isScout() const {
 
 void Boid::show(sf::RenderWindow &window) {
 
-    sf::CircleShape triangle(10,3);
-    triangle.setFillColor(sf::Color::White);
+    /*sf::CircleShape triangle(10,3);
+    triangle.setFillColor(sf::Color::White);*/
 
+    sf::CircleShape Circle(3);
+    Circle.setFillColor(sf::Color::White);
+    Circle.setPosition(x,y);
+    window.draw(Circle);
 
     angle = (180 * std::atan2(Vy, Vx) / M_PI)+90;
 
 
+    /*
     triangle.setPosition(x,y);
     triangle.setRotation(angle);
-    window.draw(triangle);
+    window.draw(triangle);*/
 }
 
 void Boid::update() {
@@ -108,8 +113,8 @@ void Boid::align(std::vector<Boid> flock) {
         xvel_avg = xvel_avg/neighboring_boids ;
         yvel_avg = yvel_avg/neighboring_boids;
 
-        Vx += (xvel_avg-Vx) * matchingFactor;
-        Vy += (yvel_avg-Vy) * matchingFactor;
+        Vx += (xvel_avg-Vx) * matchingfactor;
+        Vy += (yvel_avg-Vy) * matchingfactor;
     }
 
 }
@@ -162,12 +167,12 @@ void Boid::separation(std::vector<Boid> flock) {
 void Boid::edges(float width, float heigh) {
     if (x > width) {
         Vx -= turnfactor;
-    }else if (x < 0) {
+    }else if (x < 240) {
         Vx += turnfactor;
     }
     if (y > heigh) {
         Vy -= turnfactor;
-    }else if (y < 0) {
+    }else if (y < 110) {
         Vy += turnfactor;
     }
 }

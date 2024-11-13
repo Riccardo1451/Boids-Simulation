@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "Boid.h"
 #include "Flock.h"
+#include "omp.h"
 
 #define WIDTH 2560
 #define HEIGH 1440
@@ -10,7 +11,7 @@
 #define vgaHEIGH 720
 
 int main() {
-    int N = 300;
+    int N = 500;
     sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
 
     window.setView(window.getDefaultView());
@@ -40,12 +41,18 @@ int main() {
         // Cancella la finestra con uno sfondo bianco
         window.clear(sf::Color::Black);
 
-        for (auto &Boid : flock) {
-            Boid.align(flock);
+        #pragma omp parallel for
+        for (int i = 0; i < flock.size(); i++) {
+            /*Boid.align(flock);
             Boid.cohesion(flock);
             Boid.separation(flock);
-            Boid.edges(vgaBounds.getPosition().x + vgaBounds.getSize().x,vgaBounds.getPosition().y+vgaBounds.getSize().y);
-            Boid.update();
+            Boid.edges(240+vgaWIDTH,100+vgaHEIGH);
+            Boid.update();*/
+            flock[i].align(flock);
+            flock[i].cohesion(flock);
+            flock[i].separation(flock);
+            flock[i].edges(240+vgaWIDTH,100+vgaHEIGH);
+            flock[i].update();
         }
         for (auto &Boid : flock) {
             Boid.show(window);

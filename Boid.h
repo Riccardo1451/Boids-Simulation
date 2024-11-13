@@ -45,14 +45,15 @@ private:
     float Vx,Vy; //variabili di velocità
     bool scout; //True se appartiene al gruppo 1 False se appartiene al gruppo 2
     float angle;
-    float visualrange = 30;
-    float protectedrange = 20;
-    float matchingFactor = 0.02;
-    float centeringfactor = 0.001;
-    float avoidfactor = 0.0005;
-    float turnfactor = 0.2;
-    float minspeed = 0.5;
-    float maxspeed = 1.0;
+    float visualrange = 50.0f;
+    float protectedrange = 20.0f;
+    float matchingfactor = 0.03f;
+    float centeringfactor = 0.005f;
+    float avoidfactor = 0.05f;
+    float turnfactor = 0.8f;
+    float minspeed = 1.5f;
+    float maxspeed = 3.0f;
+
 
 
 };

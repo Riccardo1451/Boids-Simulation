@@ -11,8 +11,8 @@ Flock::Flock(int const n) {
 
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_real_distribution<> distribuzioneX(0, WIDTH);
-    std::uniform_real_distribution<> distribuzioneY(0, HEIGH);
+    std::uniform_real_distribution<> distribuzioneX(240, WIDTH);
+    std::uniform_real_distribution<> distribuzioneY(110, HEIGH);
 
     for (int i = 0; i<N; i++) {
         flock.emplace_back(distribuzioneX(gen), distribuzioneY(gen));
