@@ -1,19 +1,19 @@
 #include "Boid.h"
 #include <SFML/Graphics.hpp>
 #include <random>
+#define vgaWIDTH 1280
+#define vgaHEIGH 720
 
 Boid::Boid(float const posX, float const posY) {
 
     static std::random_device rd;  // Seme per il generatore
     static std::mt19937 gen(rd()); // Generatore Mersenne Twister
-    std::uniform_real_distribution<> distribuzione(-0.1, 0.1);
+    std::uniform_real_distribution<> distribuzione(-0.5, 0.5);
 
     x = posX;
     y = posY;
     Vx = distribuzione(gen);
     Vy = distribuzione(gen);
-    /*Vx = 0.1;
-    Vy = 0.1;*/
     angle = 0.0f;
 
     std::random_device rdb;        // Generatore di entropia
@@ -77,9 +77,76 @@ void Boid::show(sf::RenderWindow &window) {
     window.draw(triangle);*/
 }
 
-void Boid::update() {
-    x += Vx;
-    y += Vy;
+void Boid::update(std::vector<Boid> &flock) {
+    //In questa classe ora andremo a riunire tutte le regole per il flocking
+    float xpos_avg = 0, ypos_avg = 0, xvel_avg = 0, yvel_avg = 0, close_dx = 0, close_dy = 0;
+    int neighboring_boids = 0;
+
+    for (auto & otherboid : flock) {
+        //Calcolo delle distanze
+        float dx = x - otherboid.get_x();
+        float dy = y - otherboid.get_y();
+
+        if( abs(dx) < visualrange && abs(dy) < visualrange && dx != 0.f && dy != 0.f) {
+            //calcoliamo la distanza quadratica
+            float squareddistance = sqrt(dx*dx + dy*dy);
+            //se la squared è minore della protected_sqaured
+            if(squareddistance < (protectedrange)) {
+                close_dx += x - otherboid.get_x();
+                close_dy += y - otherboid.get_y();
+            }
+            //se la squared è minore della visual_squared
+            else if(squareddistance < (visualrange)) {
+
+                xpos_avg += otherboid.get_x();
+                ypos_avg += otherboid.get_y();
+
+                xvel_avg += otherboid.get_vx();
+                yvel_avg += otherboid.get_vy();
+
+                neighboring_boids += 1;
+            }
+        }
+    }
+
+    if (neighboring_boids > 0) {
+        xpos_avg = xpos_avg/neighboring_boids;
+        ypos_avg = ypos_avg/neighboring_boids;
+
+        xvel_avg = xvel_avg/neighboring_boids;
+        yvel_avg = yvel_avg/neighboring_boids;
+
+        Vx += (xpos_avg - x) * centeringfactor + (xvel_avg - Vx) *matchingfactor;
+        Vy += (ypos_avg - y) * centeringfactor + (yvel_avg - Vy) *matchingfactor;
+    }
+
+    //Contributo della avoidance
+    Vx += close_dx * avoidfactor;
+    Vy += close_dy * avoidfactor;
+
+    edges(240+vgaWIDTH,100+vgaHEIGH);
+
+
+    //Add a dynamic bias -> From couzin's paper
+    if(scout) {// biased to right of the screen
+        if(Vx > 0) {
+            biasval = std::min(maxbias, biasval+bias_increment);
+        }else {
+            biasval = std::max(bias_increment, biasval-bias_increment);
+        }
+    }else {
+        if(Vx < 0) {
+            biasval = std::min(maxbias, biasval + bias_increment);
+        }else {
+            biasval = std::max(bias_increment, biasval - bias_increment);
+        }
+    }
+    //Update the velocity with the bias
+    if(scout){ //Biased to the right
+        Vx = (1-biasval) * Vx + (biasval * 1);
+    }else { //Biased to the left
+        Vx = (1-biasval) * Vx +(biasval * (-1));
+    }
 
     float speed = sqrt(Vx*Vx+Vy*Vy);
 
@@ -90,6 +157,9 @@ void Boid::update() {
         Vx = (Vx/speed)*maxspeed;
         Vy = (Vy/speed)*maxspeed;
     }
+
+    x += Vx;
+    y += Vy;
 }
 
 void Boid::align(std::vector<Boid> flock) {

@@ -8,15 +8,13 @@
 class Flock {
 public:
     explicit Flock(int n);
-    void biasingBoids();
-
 
     std::vector<Boid> &getFlock();
 
 private:
     int N; //Numero di boids
     std::vector<Boid> flock;
-    float biasval = 0.01;
+
 };
 
 

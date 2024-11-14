@@ -11,7 +11,7 @@
 #define vgaHEIGH 720
 
 int main() {
-    int N = 500;
+    int N = 1200;
     sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
 
     window.setView(window.getDefaultView());
@@ -41,19 +41,21 @@ int main() {
         // Cancella la finestra con uno sfondo bianco
         window.clear(sf::Color::Black);
 
-        #pragma omp parallel for
+        #pragma omp for
         for (int i = 0; i < flock.size(); i++) {
             /*Boid.align(flock);
             Boid.cohesion(flock);
             Boid.separation(flock);
             Boid.edges(240+vgaWIDTH,100+vgaHEIGH);
             Boid.update();*/
-            flock[i].align(flock);
-            flock[i].cohesion(flock);
-            flock[i].separation(flock);
-            flock[i].edges(240+vgaWIDTH,100+vgaHEIGH);
-            flock[i].update();
+            //flock[i].align(flock);
+            //flock[i].cohesion(flock);
+            //flock[i].separation(flock);
+            //flock[i].edges(240+vgaWIDTH,100+vgaHEIGH);
+            flock[i].update(flock);
         }
+        #pragma omp barrier
+        printf ("%d \n",omp_get_thread_num());
         for (auto &Boid : flock) {
             Boid.show(window);
         }
@@ -63,4 +65,5 @@ int main() {
         window.display();
     }
     return 0;
+
 }
