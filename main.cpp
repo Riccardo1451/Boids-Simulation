@@ -3,6 +3,7 @@
 #include "Boid.h"
 #include "Flock.h"
 #include "omp.h"
+#include "chrono"
 
 #define WIDTH 2560
 #define HEIGH 1440
@@ -11,7 +12,10 @@
 #define vgaHEIGH 720
 
 int main() {
-    int N = 1200;
+
+    int N = 900; //Number of boids
+    bool parallel = true; //Set it to false for the sequential version
+
     sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
 
     window.setView(window.getDefaultView());
@@ -35,27 +39,32 @@ int main() {
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                window.close();
+            }
             if (event.type == sf::Event::Closed)
                 window.close();
         }
         // Cancella la finestra con uno sfondo bianco
         window.clear(sf::Color::Black);
 
-        #pragma omp for
-        for (int i = 0; i < flock.size(); i++) {
-            /*Boid.align(flock);
-            Boid.cohesion(flock);
-            Boid.separation(flock);
-            Boid.edges(240+vgaWIDTH,100+vgaHEIGH);
-            Boid.update();*/
-            //flock[i].align(flock);
-            //flock[i].cohesion(flock);
-            //flock[i].separation(flock);
-            //flock[i].edges(240+vgaWIDTH,100+vgaHEIGH);
-            flock[i].update(flock);
+        auto start = std::chrono::high_resolution_clock::now();
+        if(parallel){
+            #pragma omp parallel for
+            for (size_t i = 0; i < flock.size(); i++){
+                flock[i].update(flock);
+                //La funzione di update non deve accedere o modificare altri dati di altri boid il che evita race condition
+            }
+        } else {
+            for (auto &Boid:flock) {
+                Boid.update(flock);
+            }
         }
-        #pragma omp barrier
-        printf ("%d \n",omp_get_thread_num());
+        auto end = std::chrono::high_resolution_clock::now();
+        double elapsed = std::chrono::duration<double>(end-start).count();
+        std::cout << (parallel ? "Parallel":"Sequential") << " update time " << elapsed << " seconds" << std::endl;
+        //implicit barrier
+        window.clear();
         for (auto &Boid : flock) {
             Boid.show(window);
         }

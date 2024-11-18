@@ -14,6 +14,8 @@ Flock::Flock(int const n) {
     std::uniform_real_distribution<> distribuzioneX(240, WIDTH);
     std::uniform_real_distribution<> distribuzioneY(110, HEIGH);
 
+    //TODO: potrei parallelizzare l'inizializzazione?
+
     for (int i = 0; i<N; i++) {
         flock.emplace_back(distribuzioneX(gen), distribuzioneY(gen));
     }

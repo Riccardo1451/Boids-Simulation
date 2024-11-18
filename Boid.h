@@ -43,13 +43,13 @@ private:
     bool scout; //True se appartiene al gruppo 1 False se appartiene al gruppo 2
     float angle;
     float visualrange = 60.0f;
-    float protectedrange = 15.0f;
-    float matchingfactor = 0.1f;
-    float centeringfactor = 0.005f;
+    float protectedrange = 8.0f;
+    float matchingfactor = 0.01f;
+    float centeringfactor = 0.0007f;
     float avoidfactor = 0.05f;
-    float turnfactor = 0.5f;
-    float minspeed = 3.0f;
-    float maxspeed = 6.0f;
+    float turnfactor = 0.05f;
+    float minspeed = 0.5f;
+    float maxspeed = 2.0f;
 
     float biasval = 0.001;
     float maxbias = 0.01;
