@@ -6,7 +6,7 @@
 #define WIDTH  1290
 #define HEIGH  720
 
-Flock::Flock(int const n) {
+Flock::Flock(int const n, bool parallel) {
     N  = n;
 
     static std::random_device rd;
@@ -17,7 +17,7 @@ Flock::Flock(int const n) {
     //TODO: potrei parallelizzare l'inizializzazione?
 
     for (int i = 0; i<N; i++) {
-        flock.emplace_back(distribuzioneX(gen), distribuzioneY(gen));
+        flock.emplace_back(distribuzioneX(gen), distribuzioneY(gen), parallel);
     }
 }
 

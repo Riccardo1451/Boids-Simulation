@@ -4,7 +4,7 @@
 #define vgaWIDTH 1280
 #define vgaHEIGH 720
 
-Boid::Boid(float const posX, float const posY){
+Boid::Boid(float const posX, float const posY, bool parallel){
 
     static std::random_device rd;  // Seme per il generatore
     static std::mt19937 gen(rd()); // Generatore Mersenne Twister
@@ -20,6 +20,29 @@ Boid::Boid(float const posX, float const posY){
     std::mt19937 genb(rdb());       // Motore di numeri casuali
     std::bernoulli_distribution d(0.5); // Distribuzione bernoulliana con p=0.5
     scout = d(genb);
+
+    //Set the parallel parameters
+    this->parallel = parallel;
+    if(parallel){
+        visualrange = 60.0f;
+        protectedrange = 15.0f;
+        matchingfactor = 0.01f;
+        centeringfactor = 0.0006f;
+        avoidfactor = 0.005f;
+        turnfactor = 0.05f;
+        minspeed = 0.5f;
+        maxspeed = 2.0f;
+    }
+    else {
+        visualrange = 60.0f;
+        protectedrange = 15.0f;
+        matchingfactor = 0.1f;
+        centeringfactor = 0.005f;
+        avoidfactor = 0.05f;
+        turnfactor = 0.5f;
+        minspeed = 3.0f;
+        maxspeed = 6.0f;
+    }
 }
 
 float Boid::get_x() const {

@@ -7,7 +7,7 @@
 
 class Flock {
 public:
-    explicit Flock(int n);
+    explicit Flock(int n, bool parallel);
 
     std::vector<Boid> &getFlock();
 

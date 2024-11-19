@@ -13,7 +13,7 @@
 
 int main() {
 
-    int N = 900; //Number of boids
+    int N = 1200; //Number of boids
     bool parallel = true; //Set it to false for the sequential version
 
     sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
@@ -33,7 +33,7 @@ int main() {
     vgaBounds.setPosition(240, 100);
     sf::FloatRect bounds = vgaBounds.getGlobalBounds();
 
-    Flock f = Flock(N);
+    Flock f = Flock(N, parallel);
     std::vector<Boid> flock = f.getFlock();
 
     while (window.isOpen()) {
