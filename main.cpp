@@ -4,6 +4,7 @@
 #include "Flock.h"
 #include "omp.h"
 #include "chrono"
+#include <fstream>
 
 #define WIDTH 2560
 #define HEIGH 1440
@@ -12,7 +13,8 @@
 #define vgaHEIGH 720
 
 int main() {
-
+    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/parallel_update_times.csv");
+    outfile << "Time\n";
     int N = 1200; //Number of boids
     bool parallel = true; //Set it to false for the sequential version
 
@@ -35,8 +37,8 @@ int main() {
 
     Flock f = Flock(N, parallel);
     std::vector<Boid> flock = f.getFlock();
-
-    while (window.isOpen()) {
+    int count = 0;
+    while (window.isOpen() && count < 1000 ) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
@@ -63,6 +65,7 @@ int main() {
         auto end = std::chrono::high_resolution_clock::now();
         double elapsed = std::chrono::duration<double>(end-start).count();
         std::cout << (parallel ? "Parallel":"Sequential") << " update time " << elapsed << " seconds" << std::endl;
+        outfile << elapsed << "\n";
         //implicit barrier
         window.clear();
         for (auto &Boid : flock) {
@@ -72,7 +75,9 @@ int main() {
         // Mostra il contenuto della finestra
         window.draw(vgaBounds);
         window.display();
+        count ++;
     }
     return 0;
+    outfile.close();
 
 }

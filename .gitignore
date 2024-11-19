@@ -1,2 +1,4 @@
 .idea/
 cmake-build-debug/
+parallel_update_times.csv
+sequential_update_times.csv
