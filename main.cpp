@@ -13,10 +13,10 @@
 #define vgaHEIGH 720
 
 int main() {
-    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/parallel_update_times.csv");
+    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/sequential_update.csv");
     outfile << "Time\n";
     int N = 1200; //Number of boids
-    bool parallel = true; //Set it to false for the sequential version
+    bool parallel = false; //Set it to false for the sequential version
 
     sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
 
@@ -38,6 +38,7 @@ int main() {
     Flock f = Flock(N, parallel);
     std::vector<Boid> flock = f.getFlock();
     int count = 0;
+
     while (window.isOpen() && count < 1000 ) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -77,7 +78,7 @@ int main() {
         window.display();
         count ++;
     }
-    return 0;
     outfile.close();
+    return 0;
 
 }
