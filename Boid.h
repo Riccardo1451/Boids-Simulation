@@ -26,7 +26,7 @@ public:
 
     void show(sf::RenderWindow &window);
 
-    void update(std::vector<Boid> &flock);
+    void update(std::vector<Boid> &Currentflock, Boid &updateBoid);
 
     void align(std::vector<Boid> flock);
 
@@ -34,14 +34,14 @@ public:
 
     void separation(std::vector<Boid> flock);
 
-    void edges(float width, float heigh);
+    void edges(float width, float heigh, float &new_Vx, float &new_Vy);
 
 
 private:
     float x,y; //variabili di posizione
     float Vx,Vy; //variabili di velocità
     bool scout; //True se appartiene al gruppo 1 False se appartiene al gruppo 2
-    float angle;
+    float targetAngle;
     float visualrange;
     float protectedrange;
     float matchingfactor;

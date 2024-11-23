@@ -17,10 +17,16 @@ Flock::Flock(int const n, bool parallel) {
     //TODO: potrei parallelizzare l'inizializzazione?
 
     for (int i = 0; i<N; i++) {
-        flock.emplace_back(distribuzioneX(gen), distribuzioneY(gen), parallel);
+        currentflock.emplace_back(distribuzioneX(gen), distribuzioneY(gen), parallel);
+        nextflock.emplace_back(); //Empty inizialization
     }
 }
 
-std::vector<Boid> &Flock::getFlock() {
-    return flock;
+std::vector<Boid> & Flock::getCurrentFlock() {
+    return currentflock;
 }
+
+std::vector<Boid> & Flock::getNextFlock() {
+    return nextflock;
+}
+

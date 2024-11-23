@@ -14,7 +14,7 @@ Boid::Boid(float const posX, float const posY, bool parallel){
     y = posY;
     Vx = distribuzione(gen);
     Vy = distribuzione(gen);
-    angle = 0.0f;
+    targetAngle = 0.0f;
 
     std::random_device rdb;        // Generatore di entropia
     std::mt19937 genb(rdb());       // Motore di numeri casuali
@@ -24,20 +24,20 @@ Boid::Boid(float const posX, float const posY, bool parallel){
     //Set the parallel parameters
     this->parallel = parallel;
     if(parallel){
-        visualrange = 60.0f;
-        protectedrange = 15.0f;
+        visualrange = 55.0f;
+        protectedrange = 8.0f;
         matchingfactor = 0.01f;
         centeringfactor = 0.0006f;
-        avoidfactor = 0.005f;
+        avoidfactor = 0.05f;
         turnfactor = 0.05f;
-        minspeed = 0.5f;
-        maxspeed = 2.0f;
+        minspeed = 3.0f;
+        maxspeed = 6.0f;
     }
     else {
         visualrange = 60.0f;
         protectedrange = 15.0f;
         matchingfactor = 0.1f;
-        centeringfactor = 0.005f;
+        centeringfactor = 0.0008f;
         avoidfactor = 0.05f;
         turnfactor = 0.5f;
         minspeed = 3.0f;
@@ -82,35 +82,37 @@ bool Boid::isScout() const {
 }
 
 void Boid::show(sf::RenderWindow &window){
+    sf::CircleShape triangle(5,3);
+    triangle.setFillColor(sf::Color::White);
 
-    /*sf::CircleShape triangle(10,3);
-    triangle.setFillColor(sf::Color::White);*/
-
-    sf::CircleShape Circle(3);
+    /*sf::CircleShape Circle(3);
     Circle.setFillColor(sf::Color::White);
     Circle.setPosition(x,y);
-    window.draw(Circle);
+    window.draw(Circle);*/
 
-    angle = (180 * std::atan2(Vy, Vx) / M_PI)+90;
+    targetAngle = (180 * std::atan2(Vy, Vx) / M_PI)+90;
+    float smoothingFactor = 0.5f;  // Il fattore di "smoothness" per l'interpolazione
+    targetAngle += smoothingFactor * (targetAngle - targetAngle);
 
 
-    /*
     triangle.setPosition(x,y);
-    triangle.setRotation(angle);
-    window.draw(triangle);*/
+    triangle.setRotation(targetAngle);
+    window.draw(triangle);
 }
 
-void Boid::update(std::vector<Boid> &flock){
+void Boid::update(std::vector<Boid> &Currentflock, Boid &updateBoid){ //TODO: aggiungere un riferimento a boid in modo da poter salvare le velocità su un valore temporaneo
     //In questa classe ora andremo a riunire tutte le regole per il flocking
     float xpos_avg = 0, ypos_avg = 0, xvel_avg = 0, yvel_avg = 0, close_dx = 0, close_dy = 0;
+    float new_Vx = Vx, new_Vy = Vy;
     int neighboring_boids = 0;
 
-    for (auto & otherboid : flock){
+    for (auto & otherboid : Currentflock){
+        if(&otherboid == this) continue;
         //Calcolo delle distanze
         float dx = x - otherboid.get_x();
         float dy = y - otherboid.get_y();
 
-        if( abs(dx) < visualrange && abs(dy) < visualrange && dx != 0.f && dy != 0.f){
+        if( abs(dx) < visualrange && abs(dy) < visualrange){
             //calcoliamo la distanza quadratica
             float squareddistance = sqrt(dx*dx + dy*dy);
             //se la squared è minore della protected_sqaured
@@ -127,7 +129,7 @@ void Boid::update(std::vector<Boid> &flock){
                 xvel_avg += otherboid.get_vx();
                 yvel_avg += otherboid.get_vy();
 
-                neighboring_boids += 1;
+                neighboring_boids ++;
             }
         }
     }
@@ -139,26 +141,25 @@ void Boid::update(std::vector<Boid> &flock){
         xvel_avg = xvel_avg/neighboring_boids;
         yvel_avg = yvel_avg/neighboring_boids;
 
-        Vx += (xpos_avg - x) * centeringfactor + (xvel_avg - Vx) * matchingfactor;
-        Vy += (ypos_avg - y) * centeringfactor + (yvel_avg - Vy) * matchingfactor;
+        new_Vx += (xpos_avg - x) * centeringfactor + (xvel_avg - Vx) * matchingfactor;
+        new_Vy += (ypos_avg - y) * centeringfactor + (yvel_avg - Vy) * matchingfactor;
     }
 
     //Contributo della avoidance
-    Vx += close_dx * avoidfactor;
-    Vy += close_dy * avoidfactor;
+    new_Vx += close_dx * avoidfactor;
+    new_Vy += close_dy * avoidfactor;
 
-    edges(240+vgaWIDTH,100+vgaHEIGH);
 
 
     //Add a dynamic bias -> From couzin's paper
     if(scout){// biased to right of the screen
-        if(Vx > 0){
+        if(new_Vx > 0){
             biasval = std::min(maxbias, biasval+bias_increment);
         }else{
             biasval = std::max(bias_increment, biasval-bias_increment);
         }
     }else{
-        if(Vx < 0){
+        if(new_Vx < 0){
             biasval = std::min(maxbias, biasval + bias_increment);
         }else{
             biasval = std::max(bias_increment, biasval - bias_increment);
@@ -166,23 +167,39 @@ void Boid::update(std::vector<Boid> &flock){
     }
     //Update the velocity with the bias
     if(scout){ //Biased to the right
-        Vx = (1 - biasval) * Vx + (biasval * 1);
+        new_Vx = (1 - biasval) * new_Vx + (biasval * 1);
     }else{ //Biased to the left
-        Vx = (1 - biasval) * Vx +(biasval * (-1));
+        new_Vx = (1 - biasval) * new_Vx +(biasval * (-1));
     }
 
-    float speed = sqrt(Vx*Vx+Vy*Vy);
+    float speed = sqrt(new_Vx*new_Vx + new_Vy*new_Vy);
 
     if (speed < minspeed){
-        Vx = (Vx/speed) * minspeed;
-        Vy = (Vy/speed) * minspeed;
+        new_Vx = (new_Vx/speed) * minspeed;
+        new_Vy = (new_Vy/speed) * minspeed;
     }else if (speed > maxspeed){
-        Vx = (Vx/speed) * maxspeed;
-        Vy = (Vy/speed) * maxspeed;
+        new_Vx = (new_Vx/speed) * maxspeed;
+        new_Vy = (new_Vy/speed) * maxspeed;
     }
+    edges(240+vgaWIDTH,100+vgaHEIGH, new_Vx,new_Vy);
 
-    x += Vx;
-    y += Vy;
+    updateBoid.set_vx(new_Vx);
+    updateBoid.set_vy(new_Vy);
+    updateBoid.set_x(x + new_Vx);
+    updateBoid.set_y(y + new_Vy);
+}
+
+void Boid::edges(float width, float heigh, float &new_Vx, float &new_Vy){
+    if (x > width){
+        new_Vx -= turnfactor;
+    }else if (x < 240){
+        new_Vx += turnfactor;
+    }
+    if (y > heigh){
+        new_Vy -= turnfactor;
+    }else if (y < 110){
+        new_Vy += turnfactor;
+    }
 }
 
 void Boid::align(std::vector<Boid> flock){
@@ -256,18 +273,3 @@ void Boid::separation(std::vector<Boid> flock){
     Vx += close_dx * avoidfactor;
     Vy += close_dy * avoidfactor;
 }
-
-void Boid::edges(float width, float heigh){
-    if (x > width){
-        Vx -= turnfactor;
-    }else if (x < 240){
-        Vx += turnfactor;
-    }
-    if (y > heigh){
-        Vy -= turnfactor;
-    }else if (y < 110){
-        Vy += turnfactor;
-    }
-}
-
-

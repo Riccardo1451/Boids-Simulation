@@ -17,14 +17,17 @@ speedup = [mean_times[0] / t for t in mean_times]
 
 # Crea il grafico
 plt.figure(figsize=(10, 6))
-# plt.plot(thread_configs, speedup, label="Speedup misurato")
-# plt.plot(thread_configs, thread_configs, linestyle='--', color='r', label="Speedup ideale (lineare)")
-plt.plot(thread_configs, mean_times_ms, label="Execution Time", color='Blue')
+plt.plot(thread_configs, speedup, label="Measured speedup")
+plt.plot(thread_configs, thread_configs, linestyle='--', color='r', label="Ideal speedup (linear)")
+#plt.plot(thread_configs, mean_times_ms, label="Execution Time", color='Blue')
 
 plt.xlabel("Number of Threads")
-plt.ylabel("Execution Time (ms)")
-plt.title("Execution time")
+#plt.ylabel("Execution Time (ms)")
+#plt.title("Execution time")
+plt.ylabel("SpeedUp")
+plt.title("Speedups")
+plt.ylim(0.5,4)
 plt.xticks(thread_configs)
 plt.legend()
-plt.grid(True)
+plt.grid(False)
 plt.show()

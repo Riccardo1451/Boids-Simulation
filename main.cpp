@@ -13,13 +13,13 @@
 #define vgaHEIGH 720
 
 int main() {
-    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/sequential_update.csv");
+    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/ExecutionTime/parallel_update_1_threads.csv");
     outfile << "Time\n";
     int N = 1200; //Number of boids
-    bool parallel = false; //Set it to false for the sequential version
+    bool parallel = true; //Set it to false for the sequential version
 
     sf::RenderWindow window(sf::VideoMode(WIDTH,HEIGH), "Flock");
-
+    window.setFramerateLimit(60);
     window.setView(window.getDefaultView());
 
     sf::RectangleShape vgaBounds(sf::Vector2f(vgaWIDTH, vgaHEIGH));  // 800x500 è la dimensione dell'area VGA
@@ -36,10 +36,11 @@ int main() {
     sf::FloatRect bounds = vgaBounds.getGlobalBounds();
 
     Flock f = Flock(N, parallel);
-    std::vector<Boid> flock = f.getFlock();
-    int count = 0;
+    std::vector<Boid>& currentFlock = f.getCurrentFlock();
+    std::vector<Boid>& nextFlock = f.getNextFlock();
+    int frameCount = 0;
 
-    while (window.isOpen() && count < 1000 ) {
+    while (window.isOpen() && frameCount < 1000 ) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
@@ -54,29 +55,37 @@ int main() {
         auto start = std::chrono::high_resolution_clock::now();
         if(parallel){
             #pragma omp parallel for
-            for (size_t i = 0; i < flock.size(); i++){
-                flock[i].update(flock);
+            for (size_t i = 0; i < currentFlock.size() ; i++){
+                Boid & currentBoid = currentFlock[i];
+                currentBoid.update(currentFlock,nextFlock[i]);
+                //TODO: durante l'update salviamo il nuovo valore della velocità in un riferimento temp a boid
                 //La funzione di update non deve accedere o modificare altri dati di altri boid il che evita race condition
             }
+            currentFlock = nextFlock;
+            //TODO: scambiare puntatori delle due liste, la lista corrente diventa la lista futura
         } else {
-            for (auto &Boid:flock) {
-                Boid.update(flock);
-            }
+           for(size_t i = 0; i < currentFlock.size(); i++) {
+               Boid& currentBoid = currentFlock[i];
+               currentBoid.update(currentFlock, nextFlock[i]);
+           }
+            currentFlock = nextFlock;
         }
+
         auto end = std::chrono::high_resolution_clock::now();
         double elapsed = std::chrono::duration<double>(end-start).count();
-        std::cout << (parallel ? "Parallel":"Sequential") << " update time " << elapsed << " seconds" << std::endl;
+        //std::cout << (parallel ? "Parallel":"Sequential") << " update time " << elapsed << " seconds" << std::endl;
         outfile << elapsed << "\n";
         //implicit barrier
         window.clear();
-        for (auto &Boid : flock) {
+
+        for (auto Boid : currentFlock) {
             Boid.show(window);
         }
 
         // Mostra il contenuto della finestra
         window.draw(vgaBounds);
         window.display();
-        count ++;
+        frameCount ++;
     }
     outfile.close();
     return 0;
