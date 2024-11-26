@@ -13,7 +13,7 @@
 #define vgaHEIGH 720
 
 int main() {
-    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/ExecutionTime/parallel_update_1_threads.csv");
+    std::ofstream outfile("/Users/riccardofantechi/Desktop/Universita/Quarto anno/Parrallel Programming/Boids/Boids_Code/ExecutionTime/parallel_update_8_threads.csv");
     outfile << "Time\n";
     int N = 1200; //Number of boids
     bool parallel = true; //Set it to false for the sequential version
@@ -56,19 +56,17 @@ int main() {
         if(parallel){
             #pragma omp parallel for
             for (size_t i = 0; i < currentFlock.size() ; i++){
-                Boid & currentBoid = currentFlock[i];
-                currentBoid.update(currentFlock,nextFlock[i]);
+                currentFlock[i].update(currentFlock,nextFlock[i]);
                 //TODO: durante l'update salviamo il nuovo valore della velocità in un riferimento temp a boid
                 //La funzione di update non deve accedere o modificare altri dati di altri boid il che evita race condition
             }
-            currentFlock = nextFlock;
+            currentFlock.swap(nextFlock);
             //TODO: scambiare puntatori delle due liste, la lista corrente diventa la lista futura
         } else {
            for(size_t i = 0; i < currentFlock.size(); i++) {
-               Boid& currentBoid = currentFlock[i];
-               currentBoid.update(currentFlock, nextFlock[i]);
+               currentFlock[i].update(currentFlock, nextFlock[i]);
            }
-            currentFlock = nextFlock;
+            currentFlock.swap(nextFlock);
         }
 
         auto end = std::chrono::high_resolution_clock::now();
